@@ -1,0 +1,9 @@
+{
+  "person": {
+    "name": "Bob",
+    "age": 30,
+    "isStudent": false
+  },
+  "city": "New York"
+}
+

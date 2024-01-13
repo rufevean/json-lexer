@@ -4,7 +4,7 @@ mod utils;
 use utils::file_to_lexer;
 
 fn main() {
-    let path = Path::new("input_test/test.json");
+    let path = Path::new("input_test/test2.json");
     file_to_lexer::file_to_lexer(path);
 }
 

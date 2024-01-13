@@ -1,0 +1,11 @@
+
+{
+  "value": "Hello World!",
+  "count": 42,
+  "isPositive": true,
+  "numbers": [10, 20, 30],
+  "config": {
+    "enabled": true,
+    "threshold": 0.5
+  }
+}

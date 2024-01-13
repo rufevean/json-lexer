@@ -1,1 +1,33 @@
-{"name":"ruff"}
+{
+  "name": "John Doe",
+  "age": 30,
+  "isStudent": false,
+  "grades": [95, 87, 92],
+  "address": {
+    "city": "New York",
+    "postalCode": "10001"
+  },
+  "contact": {
+    "email": "john.doe@example.com",
+    "phone": "+1 555-1234"
+  },
+  "isEmployed": true,
+  "projects": [
+    {
+      "projectName": "Project A",
+      "startDate": "2023-01-01",
+      "endDate": "2023-05-31",
+      "status": "Completed"
+    },
+    {
+      "projectName": "Project B",
+      "startDate": "2023-06-01",
+      "endDate": null,
+      "status": "In Progress"
+    }
+  ],
+  "metadata": {
+    "createdOn": "2024-01-15T10:30:00Z",
+    "lastUpdated": "2024-01-15T15:45:00Z"
+  }
+}

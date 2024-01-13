@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+use super::minify;
 use super::symbol_table;
 #[derive(Debug, PartialEq)]
 enum Token {
@@ -9,29 +10,19 @@ enum Token {
     RBrace,
     LBracket,
     RBracket,
-    Colon,
+    Assign,
     Comma,
-    Identifier,
     String,
     Number,
-    True,
-    False,
-    Null,
     NewLine,
+    Boolean,
     EOF,
 }
 impl Lexer {
     fn consume(&mut self) {
         self.position += 1;
     }
-
-    fn skip_whitespace(&mut self) {
-        while self.input.as_bytes()[self.position] == b' ' {
-            self.consume();
-        }
-    }
     fn next_token(&mut self) -> Token {
-        self.skip_whitespace();
         if let Some(c) = self.current_char() {
             match c {
                 b'{' => self.braces(),
@@ -40,7 +31,10 @@ impl Lexer {
                 b']' => self.brackets(),
                 b':' => self.assign(),
                 b'\n' => self.new_line(),
+                b't' | b'f' => self.is_boolean(),
                 b'"' => self.is_string(),
+                b',' => self.comma(),
+                b'0'..=b'9' => self.number(),
                 _ => self.end_of_file(),
             }
         } else {
@@ -48,10 +42,34 @@ impl Lexer {
         }
     }
     fn end_of_file(&mut self) -> Token {
-            symbol_table::display_table();
-            return Token::EOF;
+        return Token::EOF;
     }
-    fn new_line(&mut self)->Token {
+
+    fn number(&mut self) -> Token {
+        let start = self.position;
+        while let Some(c) = self.current_char() {
+            if c.is_ascii_digit() {
+                self.consume();
+            } else {
+                break;
+            }
+        }
+
+        let input_number = &self.input[start..self.position];
+        symbol_table::symbol_table(input_number.to_string(), "Number".to_string());
+        Token::Number
+    }
+
+    fn comma(&mut self) -> Token {
+        if self.current_char().unwrap() == b',' {
+            self.consume();
+            symbol_table::symbol_table("Comma".to_string(), "Comma".to_string());
+            return Token::Comma;
+        } else {
+            return self.end_of_file();
+        }
+    }
+    fn new_line(&mut self) -> Token {
         while self.current_char().unwrap() != b'\n' {
             self.consume();
             return Token::NewLine;
@@ -62,26 +80,25 @@ impl Lexer {
     fn braces(&mut self) -> Token {
         if self.current_char().unwrap() == b'{' {
             self.consume();
-            symbol_table::symbol_table("LBrace".to_string(),"LBrace".to_string()); 
+            symbol_table::symbol_table("LBrace".to_string(), "LBrace".to_string());
             return Token::LBrace;
         } else if self.current_char().unwrap() == b'}' {
-
             self.consume();
-            symbol_table::symbol_table("RBrace".to_string(),"RBrace".to_string());
+            symbol_table::symbol_table("RBrace".to_string(), "RBrace".to_string());
             return Token::RBrace;
         } else {
             return self.end_of_file();
         }
     }
 
-    fn brackets(&mut self) -> Token{
+    fn brackets(&mut self) -> Token {
         if self.current_char().unwrap() == b'[' {
             self.consume();
-            symbol_table::symbol_table("LBracket".to_string(),"LBracket".to_string());
+            symbol_table::symbol_table("LBracket".to_string(), "LBracket".to_string());
             return Token::LBracket;
         } else if self.current_char().unwrap() == b']' {
             self.consume();
-            symbol_table::symbol_table("RBracket".to_string(),"RBracket".to_string());
+            symbol_table::symbol_table("RBracket".to_string(), "RBracket".to_string());
             return Token::RBracket;
         } else {
             return self.end_of_file();
@@ -90,11 +107,9 @@ impl Lexer {
     fn assign(&mut self) -> Token {
         if self.current_char().unwrap() == b':' {
             self.consume();
-            symbol_table::symbol_table("Colon".to_string(),"Colon".to_string());
-            return Token::Colon;
-
+            symbol_table::symbol_table(":".to_string(), "Assign".to_string());
+            return Token::Assign;
         } else {
-            
             return self.end_of_file();
         }
     }
@@ -106,10 +121,10 @@ impl Lexer {
                 self.consume();
             }
             self.consume();
-           
-        let input_string = &self.input[start..self.position];
-            
-            symbol_table::symbol_table(input_string.to_string() ,"String".to_string());
+
+            let input_string = &self.input[start..self.position];
+
+            symbol_table::symbol_table(input_string.to_string(), "String".to_string());
             return Token::String;
         } else {
             return self.end_of_file();
@@ -121,6 +136,20 @@ impl Lexer {
             None
         } else {
             Some(self.input.as_bytes()[self.position])
+        }
+    }
+    fn is_boolean(&mut self) -> Token {
+        let booleans = ["true", "false"];
+        let start = self.position;
+        while self.current_char().unwrap().is_ascii_alphabetic() {
+            self.consume();
+        }
+        let input_boolean = &self.input[start..self.position];
+        if booleans.contains(&input_boolean) {
+            symbol_table::symbol_table(input_boolean.to_string(), "Boolean".to_string());
+            return Token::Boolean;
+        } else {
+            return self.end_of_file();
         }
     }
 }
@@ -141,6 +170,7 @@ pub fn create_lexer(input: String) {
         input: input.to_string(),
         position: 0,
     };
+
     loop {
         let token = lexer.next_token();
         if token == Token::EOF {
@@ -153,8 +183,7 @@ pub fn create_lexer(input: String) {
 // main
 pub fn file_to_lexer(input: &Path) {
     let contents = read_contents(input);
-    println!("Contents of file:");
-    println!("{:?}", contents);
+    let minified_contents = minify::minify(&contents);
     println!("Lexer:");
-    create_lexer(contents);
+    create_lexer(minified_contents);
 }
