@@ -1,5 +1,7 @@
 ## Todo
  - write article on week 1 on how it went 
+ - error handling
+ - unicode handling 
 
 
 
