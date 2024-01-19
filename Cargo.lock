@@ -15,6 +15,7 @@ dependencies = [
  "lazy_static",
  "linked-hash-map",
  "minify",
+ "serde",
  "serde_json",
 ]
 
